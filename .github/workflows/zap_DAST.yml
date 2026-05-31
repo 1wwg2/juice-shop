@@ -18,7 +18,7 @@ jobs:
       - name: Start Juice Shop container (Test Server)
         run: |
           docker run -d -p 3000:3000 bkimminich/juice-shop
-          # Даем серверу минуту на полную загрузку
+          # ввв
           sleep 60
           # Выводим статус контейнера (для логов)
           docker ps
