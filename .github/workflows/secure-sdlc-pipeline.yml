@@ -1,0 +1,61 @@
+name: Advanced Secure SDLC Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      
+      - name: Check for secrets (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true 
+
+     
+      - name: Lint Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+        continue-on-error: true
+
+     
+      - name: Build Docker image
+        run: |
+          docker build -t juice-shop:${{ github.sha }} .
+
+     
+      - name: Scan image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'juice-shop:${{ github.sha }}'
+          format: 'json'
+          output: 'trivy-report.json'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true 
+
+      
+      - name: Run Dockle
+        uses: goodwithtech/dockle-action@v3
+        with:
+          image: 'juice-shop:${{ github.sha }}'
+          format: list
+        continue-on-error: true
+
+     
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: trivy-report.json
