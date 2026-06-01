@@ -14,14 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Потрібно для Gitleaks, щоб перевірити історію комітів
+          fetch-depth: 0 
 
       # 1. Пошук секретів (Gitleaks)
       - name: Check for secrets (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true # Щоб пайплайн не зупинявся, якщо знайде секрети
+        continue-on-error: true
 
       # 2. Перевірка Dockerfile (Hadolint)
       - name: Lint Dockerfile (Hadolint)
@@ -43,11 +43,11 @@ jobs:
           format: 'json'
           output: 'trivy-report.json'
           severity: 'CRITICAL,HIGH'
-        continue-on-error: true # Щоб звіт зберігся навіть попри критичні вразливості
+        continue-on-error: true
 
       # 5. Аналіз структури образу (Dockle)
       - name: Run Dockle
-        uses: goodwithtech/dockle-action@v3
+        uses: goodwithtech/dockle-action@main
         with:
           image: 'juice-shop:${{ github.sha }}'
           format: list
