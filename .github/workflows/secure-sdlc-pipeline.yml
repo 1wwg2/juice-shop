@@ -14,28 +14,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0 # Потрібно для Gitleaks, щоб перевірити історію комітів
 
-      
+      # 1. Пошук секретів (Gitleaks)
       - name: Check for secrets (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true 
+        continue-on-error: true # Щоб пайплайн не зупинявся, якщо знайде секрети
 
-     
+      # 2. Перевірка Dockerfile (Hadolint)
       - name: Lint Dockerfile (Hadolint)
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
         continue-on-error: true
 
-     
+      # 3. Збірка образу
       - name: Build Docker image
         run: |
           docker build -t juice-shop:${{ github.sha }} .
 
-     
+      # 4. Сканування на CVE + Генерація звіту для Wazuh
       - name: Scan image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
@@ -43,9 +43,9 @@ jobs:
           format: 'json'
           output: 'trivy-report.json'
           severity: 'CRITICAL,HIGH'
-        continue-on-error: true 
+        continue-on-error: true # Щоб звіт зберігся навіть попри критичні вразливості
 
-      
+      # 5. Аналіз структури образу (Dockle)
       - name: Run Dockle
         uses: goodwithtech/dockle-action@v3
         with:
@@ -53,7 +53,7 @@ jobs:
           format: list
         continue-on-error: true
 
-     
+      # 6. Збереження звіту як артефакту (для вашої лаби)
       - name: Upload Security Report
         uses: actions/upload-artifact@v4
         with:
