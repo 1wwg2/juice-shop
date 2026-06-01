@@ -1,246 +1,190 @@
-# ![Juice Shop Logo](https://raw.githubusercontent.com/juice-shop/juice-shop/master/frontend/src/assets/public/images/JuiceShop_Logo_100px.png) OWASP Juice Shop
+# Звіт з циклу лабораторних робіт: Впровадження елементів DevSecOps у процес розробки ПЗ за допомогою GitHub Actions
 
-[![OWASP Flagship](https://img.shields.io/badge/owasp-flagship%20project-48A646.svg)](https://owasp.org/projects/#sec-flagships)
-[![GitHub release](https://img.shields.io/github/release/juice-shop/juice-shop.svg)](https://github.com/juice-shop/juice-shop/releases/latest)
-[![Twitter Follow](https://img.shields.io/twitter/follow/owasp_juiceshop.svg?style=social&label=Follow)](https://twitter.com/owasp_juiceshop)
-[![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/owasp_juiceshop?style=social)](https://reddit.com/r/owasp_juiceshop)
+**Мета роботи:** Розробити та інтегрувати автоматизовані процеси перевірки безпеки (DevSecOps) у CI/CD конвеєр публічного репозиторію на базі GitHub Actions. Інтеграція охоплює три ключові етапи:
+1. Статичний аналіз коду (SAST).
+2. Аналіз безпеки залежностей (Software Composition Analysis - SCA).
+3. Динамічне тестування безпеки (DAST).
 
-[![CI/CD Pipeline](https://github.com/juice-shop/juice-shop/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/juice-shop/juice-shop/actions/workflows/ci.yml)
-[![Release Pipeline](https://github.com/juice-shop/juice-shop/actions/workflows/release.yml/badge.svg)](https://github.com/juice-shop/juice-shop/actions/workflows/release.yml)
-[![Coverage Status](https://coveralls.io/repos/github/juice-shop/juice-shop/badge.svg?branch=develop)](https://coveralls.io/github/juice-shop/juice-shop?branch=develop)
-[![Cypress tests](https://img.shields.io/endpoint?url=https://dashboard.cypress.io/badge/simple/3hrkhu/develop&style=flat&logo=cypress)](https://dashboard.cypress.io/projects/3hrkhu/runs)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/223/badge)](https://www.bestpractices.dev/projects/223)
-![GitHub stars](https://img.shields.io/github/stars/juice-shop/juice-shop.svg?label=GitHub%20%E2%98%85&style=flat)
-[![Static Badge](https://img.shields.io/badge/OWASP-Code_of_Conduct-blue)](CODE_OF_CONDUCT.md)
+**Тестовий репозиторій:** [juice-shop-github-actions](https://github.com/dimdimuzun/juice-shop-github-actions)
 
-> [The most trustworthy online shop out there.](https://twitter.com/dschadow/status/706781693504589824)
-> ([@dschadow](https://github.com/dschadow)) —
-> [The best juice shop on the whole internet!](https://twitter.com/shehackspurple/status/907335357775085568)
-> ([@shehackspurple](https://twitter.com/shehackspurple)) —
-> [Actually the most bug-free vulnerable application in existence!](https://youtu.be/TXAztSpYpvE?t=26m35s)
-> ([@vanderaj](https://twitter.com/vanderaj)) —
-> [First you 😂😂then you 😢](https://twitter.com/kramse/status/1073168529405472768)
-> ([@kramse](https://twitter.com/kramse)) —
-> [But this doesn't have anything to do with juice.](https://twitter.com/coderPatros/status/1199268774626488320)
-> ([@coderPatros' wife](https://twitter.com/coderPatros))
+---
 
-OWASP Juice Shop is probably the most modern and sophisticated insecure web application! It can be used in security
-trainings, awareness demos, CTFs and as a guinea pig for security tools! Juice Shop encompasses vulnerabilities from the
-entire
-[OWASP Top Ten](https://owasp.org/www-project-top-ten) along with many other security flaws found in real-world
-applications!
+## Підготовчий етап: Розгортання OWASP Juice Shop
+Для тестування інструментів безпеки було обрано навмисно вразливий вебзастосунок OWASP Juice Shop. 
+**Виконані дії:**
+1. Клонування та налаштування локального середовища Juice Shop.
+2. Підключення проєкту до репозиторію GitHub через SSH.
+3. Локальний запуск застосунку (за допомогою команд `npm install` та `npm start`) для перевірки його працездатності перед інтеграцією DevSecOps-практик.
 
-![Juice Shop Screenshot Slideshow](screenshots/slideshow.gif)
+---
 
-For a detailed introduction, full list of features and architecture overview please visit the official project page:
-<https://owasp-juice.shop>
+## Лабораторна робота №1: Налаштування SAST за допомогою SonarCloud
 
-## Table of contents
+**Опис:** Інтеграція статичного аналізу коду (Static Application Security Testing) для автоматичного виявлення вразливостей, багів та "code smells" на найбільш ранніх етапах розробки (при кожному push або pull request).
 
-- [Setup](#setup)
-    - [From Sources](#from-sources)
-    - [Packaged Distributions](#packaged-distributions)
-    - [Docker Container](#docker-container)
-    - [Vagrant](#vagrant)
-- [Demo](#demo)
-- [Documentation](#documentation)
-    - [Node.js version compatibility](#nodejs-version-compatibility)
-    - [Troubleshooting](#troubleshooting)
-    - [Official companion guide](#official-companion-guide)
-- [Contributing](#contributing)
-- [References](#references)
-- [Merchandise](#merchandise)
-- [Donations](#donations)
-- [Contributors](#contributors)
-- [Licensing](#licensing)
+### Хід виконання:
+1. **Ініціалізація проєкту в SonarCloud:** Було створено новий проєкт у SonarCloud та пов'язано його з цільовим GitHub-репозиторієм.
+   
+   ![Налаштування SonarCloud](./images/Picture11.png)
 
-## Setup
+2. **Налаштування секретів:** Для безпечної авторизації до GitHub Secrets було додано токен доступу `SONAR_TOKEN`.
 
-> You can find some less common installation variations as well as instructions to run Juice Shop on a variety of cloud computing providers in
-> [the _Running OWASP Juice Shop_ documentation](https://pwning.owasp-juice.shop/companion-guide/latest/part1/running.html).
+   ![Додавання токена SONAR_TOKEN](./images/Picture12.png)
 
-> Some challenges require an AI/LLM provider to work properly. Check the
-> [_Setting up external dependencies_ documentation](https://pwning.owasp-juice.shop/companion-guide/snapshot/part1/running.html#_setting_up_external_dependencies)
-> for instructions on configuring local or cloud-based AI providers.
+3. **Створення CI/CD Workflow:** Було написано конфігураційний файл `.github/workflows/sast.yml` для автоматичного запуску сканування під час подій `push` та `pull_request` у гілку `main`.
 
-### From Sources
+   ![Налаштування Workflow SAST](./images/Picture13.png)
+   ![Виконання Workflow SAST](./images/Picture14.png)
 
-![GitHub repo size](https://img.shields.io/github/repo-size/juice-shop/juice-shop.svg)
+**Лістинг файлу автоматизації SAST:**
+```yml
+name: SAST
 
-1. Install [node.js](#nodejs-version-compatibility)
-2. Run `git clone https://github.com/juice-shop/juice-shop.git --depth 1` (or
-   clone [your own fork](https://github.com/juice-shop/juice-shop/fork)
-   of the repository)
-3. Go into the cloned folder with `cd juice-shop`
-4. Run `npm install` (only has to be done before first start or when you change the source code)
-5. Run `npm start`
-6. Browse to <http://localhost:3000>
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-### Packaged Distributions
+env:
+  NODE_DEFAULT_VERSION: 20
+  ANGULAR_CLI_VERSION: 17
 
-[![GitHub release](https://img.shields.io/github/downloads/juice-shop/juice-shop/total.svg)](https://github.com/juice-shop/juice-shop/releases/latest)
-[![SourceForge](https://img.shields.io/sourceforge/dm/juice-shop?label=sourceforge%20downloads)](https://sourceforge.net/projects/juice-shop/)
-[![SourceForge](https://img.shields.io/sourceforge/dt/juice-shop?label=sourceforge%20downloads)](https://sourceforge.net/projects/juice-shop/)
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
 
-1. Install a 64bit [node.js](#nodejs-version-compatibility) on your Windows, MacOS or Linux machine
-2. Download `juice-shop-<version>_<node-version>_<os>_x64.zip` (or
-   `.tgz`) attached to
-   [latest release](https://github.com/juice-shop/juice-shop/releases/latest)
-3. Unpack and `cd` into the unpacked folder
-4. Run `npm start`
-5. Browse to <http://localhost:3000>
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-> Each packaged distribution includes some binaries for `sqlite3` and
-> `libxmljs2` bound to the OS and node.js version which `npm install` was
-> executed on.
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_DEFAULT_VERSION }}
+        cache: npm
 
-### Docker Container
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps --no-audit --no-fund --ignore-scripts
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/bkimminich/juice-shop.svg)](https://hub.docker.com/r/bkimminich/juice-shop)
-![Docker Stars](https://img.shields.io/docker/stars/bkimminich/juice-shop.svg)
-[![](https://images.microbadger.com/badges/image/bkimminich/juice-shop.svg)](https://microbadger.com/images/bkimminich/juice-shop
-"Get your own image badge on microbadger.com")
-[![](https://images.microbadger.com/badges/version/bkimminich/juice-shop.svg)](https://microbadger.com/images/bkimminich/juice-shop
-"Get your own version badge on microbadger.com")
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@v3
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+```
 
-1. Install [Docker](https://www.docker.com)
-2. Run `docker pull bkimminich/juice-shop`
-3. Run `docker run --rm -p 127.0.0.1:3000:3000 bkimminich/juice-shop`
-4. Browse to <http://localhost:3000> (on macOS and Windows browse to
-   <http://192.168.99.100:3000> if you are using docker-machine instead of the native docker installation)
+4. **Аналіз результатів:** Після успішного відпрацювання pipeline, результати сканування були перевірені у вкладці Security GitHub та на дашборді SonarCloud.
 
-### Vagrant
+   ![Результати перевірки Security 1](./images/Picture15.png)
+   ![Результати перевірки Security 2](./images/Picture16.png)
 
-1. Install [Vagrant](https://www.vagrantup.com/downloads.html) and
-   [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
-2. Run `git clone https://github.com/juice-shop/juice-shop.git` (or
-   clone [your own fork](https://github.com/juice-shop/juice-shop/fork)
-   of the repository)
-3. Run `cd vagrant && vagrant up`
-4. Browse to [192.168.56.110](http://192.168.56.110)
+---
 
-## Demo
+## Лабораторна робота №2: Аналіз залежностей (SCA) за допомогою Snyk
 
-Feel free to have a look at the latest version of OWASP Juice Shop:
-<http://demo.owasp-juice.shop>
+**Опис:** Впровадження Software Composition Analysis для перевірки всіх зовнішніх бібліотек та залежностей (npm-пакетів) на наявність відомих вразливостей (CVE).
 
-> This is a deployment-test and sneak-peek instance only! You are __not
-> supposed__ to use this instance for your own hacking endeavours! No
-> guaranteed uptime! Guaranteed stern looks if you break it!
+### Хід виконання:
+1. **Інтеграція зі Snyk:** Репозиторій було підключено до платформи Snyk для постійного моніторингу залежностей.
 
-## Documentation
+   ![Реєстрація у Snyk](./images/Picture21.png)
 
-### Node.js version compatibility
+2. **Налаштування доступу:** Токен доступу `SNYK_TOKEN` успішно додано до GitHub Secrets.
 
-![GitHub package.json dynamic](https://img.shields.io/github/package-json/cpu/juice-shop/juice-shop)
-![GitHub package.json dynamic](https://img.shields.io/github/package-json/os/juice-shop/juice-shop)
+   ![Додавання токена SNYK_TOKEN](./images/Picture22.png)
 
-OWASP Juice Shop officially supports the following versions of
-[node.js](http://nodejs.org) in line with the official
-[node.js LTS schedule](https://github.com/nodejs/LTS) as close as possible. Docker images and packaged distributions are
-offered accordingly.
+3. **Створення GitHub Actions Workflow:** Налаштовано конвеєр для автоматичної перевірки залежностей коду при змінах у репозиторії.
 
-| node.js | Supported              | Tested             | [Packaged Distributions](#packaged-distributions) | [Docker images](#docker-container) from `master` | [Docker images](#docker-container) from `develop` |
-|:--------|:-----------------------|:-------------------|:--------------------------------------------------|:-------------------------------------------------|:--------------------------------------------------|
-| 26.x    | :x:                    | :x:                |                                                   |                                                  |                                                   |
-| 25.x    | ( :heavy_check_mark: ) | :x:                |                                                   |                                                  |                                                   |
-| 24.x    | :heavy_check_mark:     | :heavy_check_mark: | Windows (`x64`), MacOS (`x64`), Linux (`x64`)     | `latest` (`linux/amd64`, `linux/arm64`)          |                                                   |
-| 23.x    | ( :heavy_check_mark: ) | :x:                |                                                   |                                                  |                                                   |
-| 22.x    | :heavy_check_mark:     | :heavy_check_mark: | Windows (`x64`), MacOS (`x64`), Linux (`x64`)     |                                                  | `snapshot` (`linux/amd64`, `linux/arm64`)         |
-| <22.x   | :x:                    | :x:                |                                                   |                                                  |                                                   |
+   ![Snyk Workflow процес 1](./images/Picture23.png)
+   ![Snyk Workflow процес 2](./images/Picture24.png)
 
-Juice Shop is automatically tested _only on the latest `.x` minor version_ of each node.js version mentioned above!
-There is no guarantee that older minor node.js releases will always work with Juice Shop!
-Please make sure you stay up to date with your chosen version.
+**Лістинг файлу автоматизації SCA:**
+```yml
+name: SOFTWARE COMPOSITION ANALYSIS using Snyk
 
-### Troubleshooting
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-[![Gitter](http://img.shields.io/badge/gitter-join%20chat-1dce73.svg)](https://gitter.im/bkimminich/juice-shop)
+jobs:
+  snyk:
+    runs-on: ubuntu-latest
 
-If you need help with the application setup please check 
-[our existing _Troubleshooting_](https://pwning.owasp-juice.shop/companion-guide/latest/part4/troubleshooting.html)
-guide. If this does not solve your issue please post your specific problem or question in the
-[Gitter Chat](https://gitter.im/bkimminich/juice-shop) where community members can best try to help you.
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-:stop_sign: **Please avoid opening GitHub issues for support requests or questions!**
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+```
 
-### Official companion guide
+4. **Усунення вразливостей:** Під час сканування було виявлено ряд вразливостей у залежностях, після чого було застосовано відповідні патчі (фікси) для їх усунення.
 
-[![Write Goodreads Review](https://img.shields.io/badge/goodreads-write%20review-49557240.svg)](https://www.goodreads.com/review/edit/49557240)
+   ![Виявлені вразливості](./images/Picture25.png)
+   ![Процес виправлення вразливостей](./images/Picture26.png)
 
-OWASP Juice Shop comes with an official companion guide eBook. It will give you a complete overview of all
-vulnerabilities found in the application including hints how to spot and exploit them. In the appendix you will even
-find complete step-by-step solutions to every challenge. Extensive documentation of
-[custom re-branding](https://pwning.owasp-juice.shop/companion-guide/latest/part4/customization.html),
-[CTF-support](https://pwning.owasp-juice.shop/companion-guide/latest/part4/ctf.html),
-[trainer's guide](https://pwning.owasp-juice.shop/companion-guide/latest/part4/trainers.html)
-and much more is also included.
+---
 
-[Pwning OWASP Juice Shop](https://leanpub.com/juice-shop) is published under
-[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)
-and is available **for free** in PDF, Kindle and ePub format on LeanPub. You can also
-[browse the full content online](https://pwning.owasp-juice.shop)!
+## Лабораторна робота №3: Налаштування DAST за допомогою OWASP ZAP
 
-[<img alt="Pwning OWASP Juice Shop cover" src="https://raw.githubusercontent.com/juice-shop/pwning-juice-shop/master/docs/modules/ROOT/assets/images/cover.jpg" width="200"/>](https://leanpub.com/juice-shop)
-[<img alt="Pwning OWASP Juice Shop back cover" src="https://raw.githubusercontent.com/juice-shop/pwning-juice-shop/master/docs/modules/ROOT/assets/images/introduction/back.jpg" width="200"/>](https://leanpub.com/juice-shop)
+**Опис:** Виконання динамічного тестування безпеки (Dynamic Application Security Testing) розгорнутого вебзастосунку для виявлення вразливостей під час його роботи.
 
-## Contributing
+### Хід виконання:
+1. **Налаштування ZAP у GitHub Actions:** Додано конфігурацію для автоматичного запуску контейнера ZAProxy. Сценарій налаштовано на базове сканування цільового URL демо-версії застосунку.
 
-[![GitHub contributors](https://img.shields.io/github/contributors/juice-shop/juice-shop.svg)](https://github.com/juice-shop/juice-shop/graphs/contributors)
-[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
-[![Crowdin](https://d322cqt584bo4o.cloudfront.net/owasp-juice-shop/localized.svg)](https://crowdin.com/project/owasp-juice-shop)
-![GitHub issues by-label](https://img.shields.io/github/issues/juice-shop/juice-shop/help%20wanted.svg)
-![GitHub issues by-label](https://img.shields.io/github/issues/juice-shop/juice-shop/good%20first%20issue.svg)
+   ![Конфігурація ZAP Actions](./images/Picture31.png)
 
-We are always happy to get new contributors on board! Please check
-[CONTRIBUTING.md](CONTRIBUTING.md) to learn how to
-[contribute to our codebase](CONTRIBUTING.md#code-contributions) or the
-[translation into different languages](CONTRIBUTING.md#i18n-contributions)!
+**Лістинг файлу автоматизації DAST:**
+```yml
+name: DAST
 
-## References
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
-Did you write a blog post, magazine article or do a podcast about or mentioning OWASP Juice Shop? Or maybe you held or
-joined a conference talk or meetup session, a hacking workshop or public training where this project was mentioned?
+permissions:
+  pull-requests: write
+  issues: write
 
-Add it to our ever-growing list of [REFERENCES.md](REFERENCES.md) by forking and opening a Pull Request!
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    name: Scan the web application
 
-## Merchandise
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: '[https://demo.owasp-juice.shop](https://demo.owasp-juice.shop)'
+          cmd_options: '-a'
+```
 
-* On [Spreadshirt.com](http://shop.spreadshirt.com/juiceshop) and
-  [Spreadshirt.de](http://shop.spreadshirt.de/juiceshop) you can get some swag (Shirts, Hoodies, Mugs) with the official
-  OWASP Juice Shop logo
-* On
-  [StickerYou.com](https://www.stickeryou.com/products/owasp-juice-shop/794)
-  you can get variants of the OWASP Juice Shop logo as single stickers to decorate your laptop with. They can also print
-  magnets, iron-ons, sticker sheets and temporary tattoos.
+2. **Отримання та аналіз звітів:** Після завершення роботи DAST-сканера було згенеровано детальні звіти щодо знайдених вразливостей конфігурації сервера та HTTP-заголовків.
 
-## Donations
+   ![Звіт OWASP ZAP 1](./images/Picture32.png)
+   ![Звіт OWASP ZAP 2](./images/Picture33.png)
+   ![Звіт OWASP ZAP 3](./images/Picture34.png)
 
-[![](https://img.shields.io/badge/support-owasp%20juice%20shop-blue)](https://owasp.org/donate/?reponame=www-project-juice-shop&title=OWASP+Juice+Shop)
+---
 
-The OWASP Foundation gratefully accepts donations via Stripe. Projects such as Juice Shop can then request reimbursement
-for expenses from the Foundation. If you'd like to express your support of the Juice Shop project, please make sure to
-tick the "Publicly list me as a supporter of OWASP Juice Shop" checkbox on the donation form. You can find our more
-about donations and how they are used here:
+## Висновки та очікувані результати
 
-<https://pwning.owasp-juice.shop/companion-guide/latest/part3/donations.html>
-
-## Contributors
-
-The OWASP Juice Shop Project Leaders are:
-
-- [Björn Kimminich](https://github.com/bkimminich) aka `bkimminich` [![Keybase PGP](https://img.shields.io/keybase/pgp/bkimminich)](https://keybase.io/bkimminich)
-- [Jannik Hollenbach](https://github.com/J12934) aka `J12934`
-
-For a list of all contributors to the OWASP Juice Shop please visit our
-[HALL_OF_FAME.md](HALL_OF_FAME.md).
-
-## Licensing
-
-[![license](https://img.shields.io/github/license/juice-shop/juice-shop.svg)](LICENSE)
-
-This program is free software: you can redistribute it and/or modify it under the terms of the [MIT license](LICENSE).
-OWASP Juice Shop and any contributions are Copyright © by Bjoern Kimminich & the OWASP Juice Shop contributors
-2014-2026.
-
-![Juice Shop Logo](https://raw.githubusercontent.com/juice-shop/juice-shop/master/frontend/src/assets/public/images/JuiceShop_Logo_400px.png)
+1. **Автоматизація процесів безпеки:** Успішно впроваджено практики DevSecOps. Тепер усі етапи перевірки безпеки (SAST, SCA, DAST) виконуються автоматично в рамках єдиного CI/CD циклу на базі GitHub Actions.
+2. **Звітування та моніторинг:** Налаштовано автоматичне генерування звітів про вразливості з їх подальшою візуалізацією у вкладці GitHub Security, SonarCloud та Snyk.
+3. **Покращення безпеки:** Завдяки ранньому виявленню (Shift-Left Security) значно знижено ризик потрапляння вразливого коду або небезпечних залежностей у production-середовище.
